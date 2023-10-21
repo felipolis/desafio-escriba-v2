@@ -3,11 +3,12 @@ import { ref } from "vue";
 import store from "../store";
 import { useRoute } from "vue-router";
 
+// Definindo variáveis reativas
 const route = useRoute();
-
 const keyword = ref("");
 const routeName = route.name;
 
+// Função para pesquisar
 const search = async () => {
   if (routeName === "pessoas") {
     store.dispatch("searchPeople", keyword.value);

@@ -5,16 +5,19 @@ import store from "../store";
 import { createToast } from "mosha-vue-toastify";
 import "mosha-vue-toastify/dist/style.css";
 
+// Definindo variáveis reativas
 const pessoas = computed(() => store.state.searchedPeople);
 const currentPerson = ref({});
 const isModalOpen = ref(false);
 const modalTitle = ref("");
 const successBtnLabel = ref("");
 
+// Fetching dos dados das pessoas ao montar o componente
 onMounted(() => {
   store.dispatch("searchPeople");
 });
 
+// Abrir o modal de adicionar/editar pessoa
 const openModal = (mode, pessoa = null) => {
   if (mode === "add") {
     modalTitle.value = "Adicionar Pessoa";
@@ -29,22 +32,27 @@ const openModal = (mode, pessoa = null) => {
   isModalOpen.value = true;
 };
 
+// Fechar o modal de adicionar/editar pessoa
 const closeModal = () => {
   isModalOpen.value = false;
   currentPerson.value = {};
 };
 
+// Função para exibir toast
 const toast = (title, type) => {
   createToast(title, {
     type: type === "error" ? "danger" : "success",
     position: "top-center",
     timeout: 2000,
   });
-}; 
+};
 
+// Função para adicionar/editar pessoa
 const onSubmit = () => {
-
-  if (currentPerson.value.nome === undefined || currentPerson.value.nome === "") {
+  if (
+    currentPerson.value.nome === undefined ||
+    currentPerson.value.nome === ""
+  ) {
     toast("Nome é obrigatório", "error");
     return;
   }
@@ -54,7 +62,10 @@ const onSubmit = () => {
     return;
   }
 
-  if (currentPerson.value.dataNascimento === undefined || currentPerson.value.dataNascimento === "") {
+  if (
+    currentPerson.value.dataNascimento === undefined ||
+    currentPerson.value.dataNascimento === ""
+  ) {
     toast("Data de Nascimento é obrigatório", "error");
     return;
   }
@@ -70,16 +81,19 @@ const onSubmit = () => {
   closeModal();
 };
 
+// Função para deletar pessoa
 const handleDelete = (pessoa) => {
   store.dispatch("deletePerson", pessoa.id);
 };
 
+// Máscara para o CPF
 const formatCPF = (cpf) => {
   cpf = cpf.replace(/\D/g, "");
   cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
   return cpf;
 };
 
+// Máscara para a data de nascimento
 const formatData = (data) => {
   data = data.replace(/\D/g, "");
   data = data.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3");
@@ -142,10 +156,10 @@ const formatData = (data) => {
         <div class="modal-body">
           <div class="form-group">
             <label for="nome">Nome</label>
-            <input 
-              type="text" 
-              id="nome" 
-              v-model="currentPerson.nome" 
+            <input
+              type="text"
+              id="nome"
+              v-model="currentPerson.nome"
               placeholder="ex: Felipe"
             />
 

@@ -5,16 +5,19 @@ import store from "../store";
 import { createToast } from "mosha-vue-toastify";
 import "mosha-vue-toastify/dist/style.css";
 
+// Definindo variáveis reativas
 const produtos = computed(() => store.state.searchedProducts);
 const currentProduct = ref({});
 const isModalOpen = ref(false);
 const modalTitle = ref("");
 const successBtnLabel = ref("");
 
+// Fetching dos dados dos produtos ao montar o componente
 onMounted(() => {
   store.dispatch("searchProducts");
 });
 
+// Abrir o modal de adicionar/editar produto
 const openModal = (mode, produto = null) => {
   if (mode === "add") {
     modalTitle.value = "Adicionar Produto";
@@ -29,11 +32,13 @@ const openModal = (mode, produto = null) => {
   isModalOpen.value = true;
 };
 
+// Fechar o modal de adicionar/editar produto
 const closeModal = () => {
   isModalOpen.value = false;
   currentProduct.value = {};
 };
 
+// Função para exibir toast
 const toast = (title, type) => {
   createToast(title, {
     type: type === "error" ? "danger" : "success",
@@ -42,19 +47,27 @@ const toast = (title, type) => {
   });
 };
 
+// Função para adicionar/editar produto
 const onSubmit = () => {
-  if (currentProduct.value.descricao === undefined || currentProduct.value.descricao === "") {
+  if (
+    currentProduct.value.descricao === undefined ||
+    currentProduct.value.descricao === ""
+  ) {
     toast("Descrição é obrigatório", "error");
     return;
   }
 
-  if (currentProduct.value.valoUnitario === undefined || currentProduct.value.valoUnitario === "") {
+  if (
+    currentProduct.value.valoUnitario === undefined ||
+    currentProduct.value.valoUnitario === ""
+  ) {
     toast("Valor é obrigatório", "error");
     return;
   }
 
   if (modalTitle.value === "Adicionar Produto") {
-    currentProduct.value.id = Math.max(...store.state.searchedProducts.map((p) => p.id)) + 1;
+    currentProduct.value.id =
+      Math.max(...store.state.searchedProducts.map((p) => p.id)) + 1;
     store.dispatch("addProduct", currentProduct.value);
   } else if (modalTitle.value === "Editar Produto") {
     store.dispatch("editProduct", currentProduct.value);
@@ -63,6 +76,7 @@ const onSubmit = () => {
   closeModal();
 };
 
+// Função para deletar produto
 const handleDelete = (produto) => {
   store.dispatch("deleteProduct", produto.id);
 };

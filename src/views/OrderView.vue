@@ -5,6 +5,7 @@ import store from "../store";
 import { createToast } from "mosha-vue-toastify";
 import "mosha-vue-toastify/dist/style.css";
 
+// Definindo variáveis reativas
 const pedidos = computed(() => store.state.searchedOrders);
 const currentOrder = ref({});
 const isModalOpen = ref(false);
@@ -15,12 +16,14 @@ const selectedProduct = ref({});
 const selectedQuantity = ref(0);
 const selectedItems = ref([]);
 
+// Fetching dos dados dos pedidos ao montar o componente
 onMounted(() => {
   store.dispatch("searchOrders");
   store.dispatch("searchPeople");
   store.dispatch("searchProducts");
 });
 
+// Abrir o modal de adicionar/editar pedido
 const openModal = (mode, pedido = null) => {
   if (mode === "add") {
     modalTitle.value = "Adicionar Pedido";
@@ -37,6 +40,7 @@ const openModal = (mode, pedido = null) => {
   isModalOpen.value = true;
 };
 
+// Fechar o modal de adicionar/editar pedido
 const closeModal = () => {
   isModalOpen.value = false;
   currentOrder.value = {};
@@ -44,9 +48,9 @@ const closeModal = () => {
   selectedProduct.value = {};
   selectedQuantity.value = 0;
   selectedItems.value = [];
-
 };
 
+// Função para exibir toast
 const toast = (title, type) => {
   createToast(title, {
     type: type === "error" ? "danger" : "success",
@@ -55,6 +59,7 @@ const toast = (title, type) => {
   });
 };
 
+// Função para adicionar um produto ao pedido
 const addProduct = () => {
   if (selectedProduct.value.id === undefined) {
     toast("Selecione um produto", "error");
@@ -80,8 +85,8 @@ const addProduct = () => {
   selectedItems.value.push(item);
 };
 
+// Função para adicionar/editar pedido
 const onSubmit = () => {
-
   if (selectedClient.value.id === undefined) {
     toast("Selecione um cliente", "error");
     return;
@@ -103,7 +108,10 @@ const onSubmit = () => {
       id,
       cliente,
       dataEmissao: new Date().toISOString().slice(0, 10),
-      valorTotal: selectedItems.value.reduce((acc, item) => acc + item.valor * item.quantidade, 0),
+      valorTotal: selectedItems.value.reduce(
+        (acc, item) => acc + item.valor * item.quantidade,
+        0,
+      ),
       itens: selectedItems.value,
     };
 
@@ -120,7 +128,10 @@ const onSubmit = () => {
       id: currentOrder.value.id,
       cliente,
       dataEmissao: currentOrder.value.dataEmissao,
-      valorTotal: selectedItems.value.reduce((acc, item) => acc + item.valor * item.quantidade, 0),
+      valorTotal: selectedItems.value.reduce(
+        (acc, item) => acc + item.valor * item.quantidade,
+        0,
+      ),
       itens: selectedItems.value,
     };
 
@@ -130,6 +141,7 @@ const onSubmit = () => {
   }
 };
 
+// Função para deletar pedido
 const handleDelete = (pedido) => {
   store.dispatch("deleteOrder", pedido.id);
 };
@@ -225,7 +237,7 @@ const handleDelete = (pedido) => {
               </button>
             </div>
 
-            <div 
+            <div
               class="select-item"
               v-for="item in selectedItems"
               :key="item.id"
@@ -245,7 +257,12 @@ const handleDelete = (pedido) => {
               type="text"
               name="valorTotal"
               id="valorTotal"
-              :value="selectedItems.reduce((acc, item) => acc + item.valor * item.quantidade, 0)"
+              :value="
+                selectedItems.reduce(
+                  (acc, item) => acc + item.valor * item.quantidade,
+                  0,
+                )
+              "
               disabled
             />
           </div>
