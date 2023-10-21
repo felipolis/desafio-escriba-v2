@@ -71,6 +71,16 @@ const addProduct = () => {
     return;
   }
 
+  // Verifica se o produto ja nao foi adicionado
+  const itemIndex = selectedItems.value.findIndex(
+    (item) => item.produto.id === selectedProduct.value.id,
+  );
+
+  if (itemIndex !== -1) {
+    selectedItems.value[itemIndex].quantidade += selectedQuantity.value;
+    return;
+  }
+
   const item = {
     id: selectedItems.value.length + 1,
     produto: {
