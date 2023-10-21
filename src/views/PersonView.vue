@@ -34,14 +34,15 @@ const closeModal = () => {
 
 const onSubmit = () => {
   if (modalTitle.value === "Adicionar Pessoa") {
-    currentPerson.value.id = Math.max(...store.state.searchedPeople.map((p) => p.id)) + 1;
+    currentPerson.value.id =
+      Math.max(...store.state.searchedPeople.map((p) => p.id)) + 1;
     store.dispatch("addPerson", currentPerson.value);
   } else if (modalTitle.value === "Editar Pessoa") {
     store.dispatch("editPerson", currentPerson.value);
   }
 
   closeModal();
-}
+};
 
 const handleDelete = (pessoa) => {
   store.dispatch("deletePerson", pessoa.id);
@@ -115,15 +116,21 @@ const formatData = (data) => {
         <div class="modal-body">
           <div class="form-group">
             <label for="nome">Nome</label>
-            <input type="text" id="nome" v-model="currentPerson.nome" />
+            <input 
+              type="text" 
+              id="nome" 
+              v-model="currentPerson.nome" 
+              placeholder="ex: Felipe"
+            />
 
             <label for="cpf">CPF</label>
             <input
               type="text"
               id="cpf"
               v-model="currentPerson.cpf"
-              @input="currentItem.cpf = formatCPF($event.target.value)"
+              @input="currentPerson.cpf = formatCPF($event.target.value)"
               :maxlength="14"
+              placeholder="000.000.000-00"
             />
 
             <label for="dataNascimento">Data de Nascimento</label>
@@ -132,16 +139,19 @@ const formatData = (data) => {
               id="dataNascimento"
               v-model="currentPerson.dataNascimento"
               @input="
-                currentItem.dataNascimento = formatData($event.target.value)
+                currentPerson.dataNascimento = formatData($event.target.value)
               "
               :maxlength="10"
+              placeholder="AAAA-MM-DD"
             />
           </div>
         </div>
 
         <div class="modal-footer">
           <button @click="closeModal" class="cancel">Cancelar</button>
-          <button @click="onSubmit" class="submit">{{ successBtnLabel }}</button>
+          <button @click="onSubmit" class="submit">
+            {{ successBtnLabel }}
+          </button>
         </div>
       </div>
     </div>
@@ -343,6 +353,22 @@ const formatData = (data) => {
               background-color: #66b1ff;
             }
           }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 1300px) {
+    .modal {
+      .modal-content {
+        width: 70%;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .modal {
+        .modal-content {
+          width: 90%;
         }
       }
     }
