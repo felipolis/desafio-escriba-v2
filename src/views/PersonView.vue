@@ -1,14 +1,57 @@
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import SearchBar from "../components/SearchBar.vue";
 import axios from "axios";
 import store from "../store";
 
 const pessoas = computed(() => store.state.searchedPeople);
+const currentPerson = ref({});
+const isModalOpen = ref(false);
+const modalTitle = ref("");
+const successBtnLabel = ref("");
 
 onMounted(() => {
   store.dispatch("searchPeople");
 });
+
+const openModal = (mode, pessoa = null) => {
+  if (mode === "add") {
+    modalTitle.value = "Adicionar Pessoa";
+    successBtnLabel.value = "Adicionar";
+    currentPerson.value = {};
+  } else if (mode === "edit") {
+    modalTitle.value = "Editar Pessoa";
+    successBtnLabel.value = "Editar";
+    currentPerson.value = { ...pessoa };
+  }
+
+  isModalOpen.value = true;
+};
+
+const closeModal = () => {
+  isModalOpen.value = false;
+  currentPerson.value = {};
+};
+
+const onSubmit = () => {
+
+}
+
+const handleDelete = (pessoa) => {
+  
+};
+
+const formatCPF = (cpf) => {
+  cpf = cpf.replace(/\D/g, "");
+  cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+  return cpf;
+};
+
+const formatData = (data) => {
+  data = data.replace(/\D/g, "");
+  data = data.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3");
+  return data;
+};
 </script>
 
 <template>
@@ -27,7 +70,7 @@ onMounted(() => {
             <th>CPF</th>
             <th>Nascimento</th>
             <th class="add">
-              <button>
+              <button @click="openModal('add')">
                 <i class="fas fa-plus"></i>
               </button>
             </th>
@@ -41,10 +84,10 @@ onMounted(() => {
             <td>{{ pessoa.dataNascimento }}</td>
             <td class="actions">
               <button class="edit">
-                <i class="fas fa-edit"></i>
+                <i class="fas fa-edit" @click="openModal('edit', pessoa)"></i>
               </button>
               <button class="del">
-                <i class="fas fa-trash"></i>
+                <i class="fas fa-trash" @click="handleDelete(pessoa)"></i>
               </button>
             </td>
           </tr>
@@ -54,6 +97,48 @@ onMounted(() => {
     <!-- TABLE -->
 
     <!-- MODAL -->
+    <div v-if="isModalOpen" class="modal">
+      <div class="modal-background" @click="closeModal"></div>
+
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>{{ modalTitle }}</span>
+          <i class="modal-close fa-solid fa-x" @click="closeModal"></i>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="nome">Nome</label>
+            <input type="text" id="nome" v-model="currentPerson.nome" />
+
+            <label for="cpf">CPF</label>
+            <input
+              type="text"
+              id="cpf"
+              v-model="currentPerson.cpf"
+              @input="currentItem.cpf = formatCPF($event.target.value)"
+              :maxlength="14"
+            />
+
+            <label for="dataNascimento">Data de Nascimento</label>
+            <input
+              type="text"
+              id="dataNascimento"
+              v-model="currentPerson.dataNascimento"
+              @input="
+                currentItem.dataNascimento = formatData($event.target.value)
+              "
+              :maxlength="10"
+            />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button @click="closeModal" class="cancel">Cancelar</button>
+          <button @click="onSubmit" class="submit">{{ successBtnLabel }}</button>
+        </div>
+      </div>
+    </div>
     <!-- MODAL -->
   </main>
 </template>
@@ -161,6 +246,95 @@ onMounted(() => {
                   background-color: #f78989;
                 }
               }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+
+    .modal-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      width: 40%;
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: bold;
+        .modal-close {
+          cursor: pointer;
+        }
+      }
+
+      .modal-body {
+        margin-top: 20px;
+
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          margin-bottom: 20px;
+
+          label {
+            margin-bottom: 5px;
+          }
+          input {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #bdc3c7;
+            margin-bottom: 1rem;
+          }
+        }
+      }
+
+      .modal-footer {
+        margin-top: 20px;
+        text-align: right;
+        button {
+          padding: 10px 20px;
+          border-radius: 5px;
+          border: none;
+          cursor: pointer;
+          color: white;
+          font-weight: bold;
+
+          &.cancel {
+            background-color: #f56c6c;
+            margin-right: 10px;
+
+            &:hover {
+              background-color: #f78989;
+            }
+          }
+          &.submit {
+            background-color: #409eff;
+
+            &:hover {
+              background-color: #66b1ff;
             }
           }
         }
