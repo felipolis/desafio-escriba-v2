@@ -1,110 +1,14 @@
 <script setup>
+import { computed, onMounted } from "vue";
 import SearchBar from "../components/SearchBar.vue";
+import axios from "axios";
+import store from "../store";
 
-const pessoas = [
-  {
-    id: 1,
-    nome: "João",
-    cpf: "12345678900",
-    nascimento: "01012000",
-  },
-  {
-    id: 2,
-    nome: "Maria",
-    cpf: "12345678900",
-    nascimento: "01012000",
-  },
-  {
-    id: 3,
-    nome: "José",
-    cpf: "12345678900",
-    nascimento: "01012000",
-  },
-  {
-    id: 4,
-    nome: "Pedro",
-    cpf: "12345678900",
-    nascimento: "01012000",
-  },
-  {
-    id: 5,
-    nome: "Paulo",
-    cpf: "12345678900",
-    nascimento: "01012000",
-  },
-  {
-    id: 6,
-    nome: "Lucas",
-    cpf: "12345678900",
-    nascimento: "01012000",
-  },
-  {
-    id: 7,
-    nome: "Marcos",
-    cpf: "12345678900",
-    nascimento: "01012000",
-  },
-  {
-    id: 8,
-    nome: "Mateus",
-    cpf: "12345678900",
-    nascimento: "01012000",
-  },
-  {
-    id: 9,
-    nome: "Tiago",
-    cpf: "12345678900",
-    nascimento: "01012000",
-  },
-  {
-    id: 10,
-    nome: "Judas",
-    cpf: "12345678900",
-    nascimento: "01012000",
-  },
-  {
-    id: 11,
-    nome: "Bartolomeu",
-    cpf: "12345678900",
-    nascimento: "01012000",
-  },
-  {
-    id: 12,
-    nome: "Tomé",
-    cpf: "12345678900",
-    nascimento: "01012000",
-  },
-  {
-    id: 13,
-    nome: "Filipe",
-    cpf: "12345678900",
-    nascimento: "01012000",
-  },
-  {
-    id: 14,
-    nome: "Simão",
-    cpf: "12345678900",
-    nascimento: "01012000",
-  },
-  {
-    id: 15,
-    nome: "Matias",
-    cpf: "12345678900",
-    nascimento: "01012000",
-  },
-  {
-    id: 16,
-    nome: "Tadeu",
-    cpf: "12345678900",
-    nascimento: "01012000",
-  },
-  {
-    id: 17,
-    nome: "João",
-    cpf: "12345678900",
-    nascimento: "01012000",
-  }
-];
+const pessoas = computed(() => store.state.searchedPeople);
+
+onMounted(() => {
+  store.dispatch("searchPeople");
+});
 </script>
 
 <template>
@@ -134,7 +38,7 @@ const pessoas = [
             <td>{{ pessoa.id }}</td>
             <td>{{ pessoa.nome }}</td>
             <td>{{ pessoa.cpf }}</td>
-            <td>{{ pessoa.nascimento }}</td>
+            <td>{{ pessoa.dataNascimento }}</td>
             <td class="actions">
               <button class="edit">
                 <i class="fas fa-edit"></i>
@@ -148,6 +52,9 @@ const pessoas = [
       </table>
     </div>
     <!-- TABLE -->
+
+    <!-- MODAL -->
+    <!-- MODAL -->
   </main>
 </template>
 
