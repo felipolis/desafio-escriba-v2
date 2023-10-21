@@ -1,5 +1,22 @@
 <script setup>
-const search = async () => {};
+import { ref } from "vue";
+import store from "../store";
+import { useRoute } from "vue-router";
+
+const route = useRoute();
+
+const keyword = ref("");
+const routeName = route.name;
+
+const search = async () => {
+  if (routeName === "pessoas") {
+    store.dispatch("searchPeople", keyword.value);
+  } else if (routeName === "produtos") {
+    store.dispatch("searchProducts", keyword.value);
+  } else if (routeName === "pedidos") {
+    store.dispatch("searchOrders", keyword.value);
+  }
+};
 </script>
 
 <template>
@@ -42,7 +59,6 @@ const search = async () => {};
       }
     }
   }
-
 }
 
 @media (min-width: 640px) {
@@ -62,9 +78,4 @@ const search = async () => {};
     width: 50%;
   }
 }
-
-
-
-
-
 </style>

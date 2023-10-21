@@ -1,7 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import SearchBar from "../components/SearchBar.vue";
-import axios from "axios";
 import store from "../store";
 
 const pessoas = computed(() => store.state.searchedPeople);
