@@ -81,6 +81,17 @@ const addProduct = () => {
 };
 
 const onSubmit = () => {
+
+  if (selectedClient.value.id === undefined) {
+    toast("Selecione um cliente", "error");
+    return;
+  }
+
+  if (selectedItems.value.length === 0) {
+    toast("Adicione pelo menos um item", "error");
+    return;
+  }
+
   if (modalTitle.value === "Adicionar Pedido") {
     const id = Math.max(...store.state.searchedOrders.map((p) => p.id)) + 1;
     const cliente = {
