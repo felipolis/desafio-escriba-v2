@@ -22,6 +22,7 @@ import SearchBar from './components/SearchBar.vue'
   align-items: center;
   height: 100vh;
   padding: 0.5rem;
+  overflow: hidden;
 }
 
 </style>
