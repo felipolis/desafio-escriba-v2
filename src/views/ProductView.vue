@@ -1,128 +1,71 @@
 <script setup>
+import { computed, onMounted, ref } from "vue";
 import SearchBar from "../components/SearchBar.vue";
+import store from "../store";
+import { createToast } from "mosha-vue-toastify";
+import "mosha-vue-toastify/dist/style.css";
 
-const produtos = [
-  {
-    id: 1,
-    description: "Produto 1",
-    valor: 10,
-  },
-  {
-    id: 2,
-    description: "Produto 2",
-    valor: 20,
-  },
-  {
-    id: 3,
-    description: "Produto 3",
-    valor: 30,
-  },
-  {
-    id: 4,
-    description: "Produto 4",
-    valor: 40,
-  },
-  {
-    id: 5,
-    description: "Produto 5",
-    valor: 50,
-  },
-  {
-    id: 6,
-    description: "Produto 6",
-    valor: 60,
-  },
-  {
-    id: 7,
-    description: "Produto 7",
-    valor: 70,
-  },
-  {
-    id: 8,
-    description: "Produto 8",
-    valor: 80,
-  },
-  {
-    id: 9,
-    description: "Produto 9",
-    valor: 90,
-  },
-  {
-    id: 10,
-    description: "Produto 10",
-    valor: 100,
-  },
-  {
-    id: 11,
-    description: "Produto 11",
-    valor: 110,
-  },
-  {
-    id: 12,
-    description: "Produto 12",
-    valor: 120,
-  },
-  {
-    id: 13,
-    description: "Produto 13",
-    valor: 130,
-  },
-  {
-    id: 14,
-    description: "Produto 14",
-    valor: 140,
-  },
-  {
-    id: 15,
-    description: "Produto 15",
-    valor: 150,
-  },
-  {
-    id: 16,
-    description: "Produto 16",
-    valor: 160,
-  },
-  {
-    id: 17,
-    description: "Produto 17",
-    valor: 170,
-  },
-  {
-    id: 18,
-    description: "Produto 18",
-    valor: 180,
-  },
-  {
-    id: 19,
-    description: "Produto 19",
-    valor: 190,
-  },
-  {
-    id: 20,
-    description: "Produto 20",
-    valor: 200,
-  },
-  {
-    id: 21,
-    description: "Produto 21",
-    valor: 210,
-  },
-  {
-    id: 22,
-    description: "Produto 22",
-    valor: 220,
-  },
-  {
-    id: 23,
-    description: "Produto 23",
-    valor: 230,
-  },
-  {
-    id: 24,
-    description: "Produto 24",
-    valor: 240,
+const produtos = computed(() => store.state.searchedProducts);
+const currentProduct = ref({});
+const isModalOpen = ref(false);
+const modalTitle = ref("");
+const successBtnLabel = ref("");
+
+onMounted(() => {
+  store.dispatch("searchProducts");
+});
+
+const openModal = (mode, produto = null) => {
+  if (mode === "add") {
+    modalTitle.value = "Adicionar Produto";
+    successBtnLabel.value = "Adicionar";
+    currentProduct.value = {};
+  } else if (mode === "edit") {
+    modalTitle.value = "Editar Produto";
+    successBtnLabel.value = "Editar";
+    currentProduct.value = { ...produto };
   }
-]
+
+  isModalOpen.value = true;
+};
+
+const closeModal = () => {
+  isModalOpen.value = false;
+  currentProduct.value = {};
+};
+
+const toast = (title, type) => {
+  createToast(title, {
+    type: type === "error" ? "danger" : "success",
+    position: "top-center",
+    timeout: 2000,
+  });
+};
+
+const onSubmit = () => {
+  if (currentProduct.value.descricao === undefined || currentProduct.value.descricao === "") {
+    toast("Descrição é obrigatório", "error");
+    return;
+  }
+
+  if (currentProduct.value.valoUnitario === undefined || currentProduct.value.valoUnitario === "") {
+    toast("Valor é obrigatório", "error");
+    return;
+  }
+
+  if (modalTitle.value === "Adicionar Produto") {
+    currentProduct.value.id = Math.max(...store.state.searchedProducts.map((p) => p.id)) + 1;
+    store.dispatch("addProduct", currentProduct.value);
+  } else if (modalTitle.value === "Editar Produto") {
+    store.dispatch("editProduct", currentProduct.value);
+  }
+
+  closeModal();
+};
+
+const handleDelete = (produto) => {
+  store.dispatch("deleteProduct", produto.id);
+};
 </script>
 
 <template>
@@ -140,7 +83,7 @@ const produtos = [
             <th>Descrição</th>
             <th>Valor</th>
             <th class="add">
-              <button>
+              <button @click="openModal('add')">
                 <i class="fas fa-plus"></i>
               </button>
             </th>
@@ -149,13 +92,13 @@ const produtos = [
         <tbody>
           <tr v-for="produto in produtos" :key="produto.id">
             <td>{{ produto.id }}</td>
-            <td>{{ produto.description }}</td>
-            <td>{{ produto.valor }}</td>
+            <td>{{ produto.descricao }}</td>
+            <td>{{ produto.valoUnitario }}</td>
             <td class="actions">
-              <button class="edit">
+              <button class="edit" @click="openModal('edit', produto)">
                 <i class="fas fa-edit"></i>
               </button>
-              <button class="del">
+              <button class="del" @click="handleDelete(produto)">
                 <i class="fas fa-trash"></i>
               </button>
             </td>
@@ -164,6 +107,51 @@ const produtos = [
       </table>
     </div>
     <!-- TABLE -->
+
+    <!-- MODAL -->
+    <div v-if="isModalOpen" class="modal">
+      <div class="modal-background" @click="closeModal"></div>
+
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>{{ modalTitle }}</span>
+          <i class="modal-close fa-solid fa-x" @click="closeModal"></i>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="descricao">Descrição</label>
+            <input
+              type="text"
+              id="descricao"
+              v-model="currentProduct.descricao"
+              placeholder="ex: Camiseta"
+            />
+
+            <label for="valor">Valor</label>
+            <input
+              type="text"
+              id="valor"
+              v-model="currentProduct.valoUnitario"
+              @input="
+                currentProduct.valoUnitario = $event.target.value
+                  .replace(/[^0-9.]/g, '')
+                  .replace(/(\..*)\./g, '$1')
+              "
+              placeholder="ex: 10.00"
+            />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button @click="closeModal" class="cancel">Cancelar</button>
+          <button @click="onSubmit" class="submit">
+            {{ successBtnLabel }}
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- MODAL -->
   </main>
 </template>
 
@@ -272,6 +260,111 @@ const produtos = [
               }
             }
           }
+        }
+      }
+    }
+  }
+
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+
+    .modal-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      width: 40%;
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: bold;
+        .modal-close {
+          cursor: pointer;
+        }
+      }
+
+      .modal-body {
+        margin-top: 20px;
+
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          margin-bottom: 20px;
+
+          label {
+            margin-bottom: 5px;
+          }
+          input {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #bdc3c7;
+            margin-bottom: 1rem;
+          }
+        }
+      }
+
+      .modal-footer {
+        margin-top: 20px;
+        text-align: right;
+        button {
+          padding: 10px 20px;
+          border-radius: 5px;
+          border: none;
+          cursor: pointer;
+          color: white;
+          font-weight: bold;
+
+          &.cancel {
+            background-color: #f56c6c;
+            margin-right: 10px;
+
+            &:hover {
+              background-color: #f78989;
+            }
+          }
+          &.submit {
+            background-color: #409eff;
+
+            &:hover {
+              background-color: #66b1ff;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 1300px) {
+    .modal {
+      .modal-content {
+        width: 70%;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .modal {
+        .modal-content {
+          width: 90%;
         }
       }
     }

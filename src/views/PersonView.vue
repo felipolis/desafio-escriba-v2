@@ -2,6 +2,8 @@
 import { computed, onMounted, ref } from "vue";
 import SearchBar from "../components/SearchBar.vue";
 import store from "../store";
+import { createToast } from "mosha-vue-toastify";
+import "mosha-vue-toastify/dist/style.css";
 
 const pessoas = computed(() => store.state.searchedPeople);
 const currentPerson = ref({});
@@ -32,7 +34,31 @@ const closeModal = () => {
   currentPerson.value = {};
 };
 
+const toast = (title, type) => {
+  createToast(title, {
+    type: type === "error" ? "danger" : "success",
+    position: "top-center",
+    timeout: 2000,
+  });
+}; 
+
 const onSubmit = () => {
+
+  if (currentPerson.value.nome === undefined || currentPerson.value.nome === "") {
+    toast("Nome é obrigatório", "error");
+    return;
+  }
+
+  if (currentPerson.value.cpf === undefined || currentPerson.value.cpf === "") {
+    toast("CPF é obrigatório", "error");
+    return;
+  }
+
+  if (currentPerson.value.dataNascimento === undefined || currentPerson.value.dataNascimento === "") {
+    toast("Data de Nascimento é obrigatório", "error");
+    return;
+  }
+
   if (modalTitle.value === "Adicionar Pessoa") {
     currentPerson.value.id =
       Math.max(...store.state.searchedPeople.map((p) => p.id)) + 1;

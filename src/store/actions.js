@@ -44,6 +44,13 @@ export function deletePerson({ commit }, id) {
       })
 }
 
+export function deleteProduct({ commit }, id) {
+    axios.delete(`http://localhost:3000/produtos/${id}`)
+        .then(() => {
+            commit('deleteProduct', id)
+        })
+}
+
 export function addPerson({ commit }, person) {
   axios.post('http://localhost:3000/pessoas', person)
       .then(({ data }) => {
@@ -51,9 +58,23 @@ export function addPerson({ commit }, person) {
       })
 }
 
+export function addProduct({ commit }, product) {
+    axios.post('http://localhost:3000/produtos', product)
+        .then(({ data }) => {
+            commit('addProduct', data)
+        })
+}
+
 export function editPerson({ commit }, person) {
   axios.put(`http://localhost:3000/pessoas/${person.id}`, person)
       .then(() => {
           commit('editPerson', person)
       })
+}
+
+export function editProduct({ commit }, product) {
+    axios.put(`http://localhost:3000/produtos/${product.id}`, product)
+        .then(() => {
+            commit('editProduct', product)
+        })
 }
