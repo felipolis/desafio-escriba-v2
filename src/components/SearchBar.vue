@@ -12,9 +12,6 @@ const search = async () => {};
         @input="search"
       />
     </div>
-    <div class="search-button">
-      <button @click="search">Pesquisar</button>
-    </div>
   </main>
 </template>
 
@@ -32,12 +29,12 @@ const search = async () => {};
   //background-color: white;
 
   .search-input {
-    width: 70%;
+    width: 100%;
     input {
       width: 100%;
       height: 100%;
       border: none;
-      border-radius: 0.5rem;
+      border-radius: 2rem;
       padding: 1rem;
 
       &:focus {
@@ -46,25 +43,27 @@ const search = async () => {};
     }
   }
 
-  .search-button {
-    width: 30%;
-    button {
-      width: 100%;
-      height: 100%;
-      border: none;
-      border-radius: 0.5rem;
-      padding: 1rem;
-      background-color: #2c3e50;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
+}
 
-      &:hover {
-        background-color: #34495e;
-      }
-    }
+@media (min-width: 640px) {
+  .search-container {
+    width: 100%;
   }
 }
+
+@media (min-width: 768px) {
+  .search-container {
+    width: 80%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .search-container {
+    width: 50%;
+  }
+}
+
+
 
 
 
