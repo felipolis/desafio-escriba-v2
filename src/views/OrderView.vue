@@ -1,122 +1,127 @@
 <script setup>
+import { computed, onMounted, ref } from "vue";
 import SearchBar from "../components/SearchBar.vue";
+import store from "../store";
+import { createToast } from "mosha-vue-toastify";
+import "mosha-vue-toastify/dist/style.css";
 
-const pedidos = [
-  {
-    id: 1,
-    cliente: "João",
-    emissao: "01012000",
-    valorTotal: 10,
-  },
-  {
-    id: 2,
-    cliente: "Maria",
-    emissao: "01012000",
-    valorTotal: 20,
-  },
-  {
-    id: 3,
-    cliente: "José",
-    emissao: "01012000",
-    valorTotal: 30,
-  },
-  {
-    id: 4,
-    cliente: "Pedro",
-    emissao: "01012000",
-    valorTotal: 40,
-  },
-  {
-    id: 5,
-    cliente: "Paulo",
-    emissao: "01012000",
-    valorTotal: 50,
-  },
-  {
-    id: 6,
-    cliente: "Lucas",
-    emissao: "01012000",
-    valorTotal: 60,
-  },
-  {
-    id: 7,
-    cliente: "Marcos",
-    emissao: "01012000",
-    valorTotal: 70,
-  },
-  {
-    id: 8,
-    cliente: "Mateus",
-    emissao: "01012000",
-    valorTotal: 80,
-  },
-  {
-    id: 9,
-    cliente: "Tiago",
-    emissao: "01012000",
-    valorTotal: 90,
-  },
-  {
-    id: 10,
-    cliente: "João",
-    emissao: "01012000",
-    valorTotal: 100,
-  },
-  {
-    id: 11,
-    cliente: "Maria",
-    emissao: "01012000",
-    valorTotal: 110,
-  },
-  {
-    id: 12,
-    cliente: "José",
-    emissao: "01012000",
-    valorTotal: 120,
-  },
-  {
-    id: 13,
-    cliente: "Pedro",
-    emissao: "01012000",
-    valorTotal: 130,
-  },
-  {
-    id: 14,
-    cliente: "Paulo",
-    emissao: "01012000",
-    valorTotal: 140,
-  },
-  {
-    id: 15,
-    cliente: "Lucas",
-    emissao: "01012000",
-    valorTotal: 150,
-  },
-  {
-    id: 16,
-    cliente: "Marcos",
-    emissao: "01012000",
-    valorTotal: 160,
-  },
-  {
-    id: 17,
-    cliente: "Mateus",
-    emissao: "01012000",
-    valorTotal: 170,
-  },
-  {
-    id: 18,
-    cliente: "Tiago",
-    emissao: "01012000",
-    valorTotal: 180,
-  },
-  {
-    id: 19,
-    cliente: "João",
-    emissao: "01012000",
-    valorTotal: 190,
+const pedidos = computed(() => store.state.searchedOrders);
+const currentOrder = ref({});
+const isModalOpen = ref(false);
+const modalTitle = ref("");
+const successBtnLabel = ref("");
+const selectedClient = ref({});
+const selectedProduct = ref({});
+const selectedQuantity = ref(0);
+const selectedItems = ref([]);
+
+onMounted(() => {
+  store.dispatch("searchOrders");
+  store.dispatch("searchPeople");
+  store.dispatch("searchProducts");
+});
+
+const openModal = (mode, pedido = null) => {
+  if (mode === "add") {
+    modalTitle.value = "Adicionar Pedido";
+    successBtnLabel.value = "Adicionar";
+    currentOrder.value = {};
+  } else if (mode === "edit") {
+    modalTitle.value = "Editar Pedido";
+    successBtnLabel.value = "Editar";
+    currentOrder.value = { ...pedido };
+    selectedClient.value = { ...pedido.cliente };
+    selectedItems.value = [...pedido.itens];
   }
-]
+
+  isModalOpen.value = true;
+};
+
+const closeModal = () => {
+  isModalOpen.value = false;
+  currentOrder.value = {};
+  selectedClient.value = {};
+  selectedProduct.value = {};
+  selectedQuantity.value = 0;
+  selectedItems.value = [];
+
+};
+
+const toast = (title, type) => {
+  createToast(title, {
+    type: type === "error" ? "danger" : "success",
+    position: "top-center",
+    timeout: 2000,
+  });
+};
+
+const addProduct = () => {
+  if (selectedProduct.value.id === undefined) {
+    toast("Selecione um produto", "error");
+    return;
+  }
+
+  if (selectedQuantity.value === 0) {
+    toast("Selecione uma quantidade", "error");
+    return;
+  }
+
+  const item = {
+    id: selectedItems.value.length + 1,
+    produto: {
+      id: selectedProduct.value.id,
+      descricao: selectedProduct.value.descricao,
+    },
+    valor: selectedProduct.value.valoUnitario,
+    quantidade: selectedQuantity.value,
+    subtotal: selectedProduct.value.valoUnitario * selectedQuantity.value,
+  };
+
+  selectedItems.value.push(item);
+};
+
+const onSubmit = () => {
+  if (modalTitle.value === "Adicionar Pedido") {
+    const id = Math.max(...store.state.searchedOrders.map((p) => p.id)) + 1;
+    const cliente = {
+      id: selectedClient.value.id,
+      nome: selectedClient.value.nome,
+    };
+
+    const pedido = {
+      id,
+      cliente,
+      dataEmissao: new Date().toISOString().slice(0, 10),
+      valorTotal: selectedItems.value.reduce((acc, item) => acc + item.valor * item.quantidade, 0),
+      itens: selectedItems.value,
+    };
+
+    store.dispatch("addOrder", pedido);
+
+    closeModal();
+  } else if (modalTitle.value === "Editar Pedido") {
+    const cliente = {
+      id: selectedClient.value.id,
+      nome: selectedClient.value.nome,
+    };
+
+    const pedido = {
+      id: currentOrder.value.id,
+      cliente,
+      dataEmissao: currentOrder.value.dataEmissao,
+      valorTotal: selectedItems.value.reduce((acc, item) => acc + item.valor * item.quantidade, 0),
+      itens: selectedItems.value,
+    };
+
+    store.dispatch("editOrder", pedido);
+
+    closeModal();
+  }
+};
+
+const handleDelete = (pedido) => {
+  store.dispatch("deleteOrder", pedido.id);
+};
 </script>
 
 <template>
@@ -135,7 +140,7 @@ const pedidos = [
             <th>Emissão</th>
             <th>Valor Total</th>
             <th class="add">
-              <button>
+              <button @click="openModal('add')">
                 <i class="fas fa-plus"></i>
               </button>
             </th>
@@ -144,15 +149,15 @@ const pedidos = [
         <tbody>
           <tr v-for="pedido in pedidos" :key="pedido.id">
             <td>{{ pedido.id }}</td>
-            <td>{{ pedido.cliente }}</td>
-            <td>{{ pedido.emissao }}</td>
+            <td>{{ pedido.cliente.nome }}</td>
+            <td>{{ pedido.dataEmissao }}</td>
             <td>{{ pedido.valorTotal }}</td>
             <td class="actions">
-              <button class="edit">
+              <button class="edit" @click="openModal('edit', pedido)">
                 <i class="fas fa-edit"></i>
               </button>
               <button class="del">
-                <i class="fas fa-trash"></i>
+                <i class="fas fa-trash" @click="handleDelete(pedido)"></i>
               </button>
             </td>
           </tr>
@@ -160,6 +165,90 @@ const pedidos = [
       </table>
     </div>
     <!-- TABLE -->
+
+    <!-- MODAL -->
+    <div v-if="isModalOpen" class="modal">
+      <div class="modal-background" @click="closeModal"></div>
+
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>{{ modalTitle }}</span>
+          <i class="modal-close fa-solid fa-x" @click="closeModal"></i>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="cliente">Cliente</label>
+            <select name="cliente" id="cliente" v-model="selectedClient">
+              <option
+                v-for="cliente in store.state.searchedPeople"
+                :key="cliente.id"
+                :value="cliente"
+              >
+                {{ cliente.nome }}
+              </option>
+            </select>
+
+            <div class="select-item">
+              <label for="produto">Produto</label>
+              <select name="produto" id="produto" v-model="selectedProduct">
+                <option
+                  v-for="produto in store.state.searchedProducts"
+                  :key="produto.id"
+                  :value="produto"
+                >
+                  {{ produto.descricao }}
+                </option>
+              </select>
+
+              <label for="quantidade">Quantidade</label>
+              <input
+                type="number"
+                name="quantidade"
+                id="quantidade"
+                v-model="selectedQuantity"
+              />
+
+              <button @click="addProduct()">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+
+            <div 
+              class="select-item"
+              v-for="item in selectedItems"
+              :key="item.id"
+            >
+              <input type="text" :value="item.produto.descricao" disabled />
+              <input type="text" :value="item.quantidade" disabled />
+              <button
+                class="delBtn"
+                @click="selectedItems.splice(selectedItems.indexOf(item), 1)"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+
+            <label for="valorTotal">Valor Total</label>
+            <input
+              type="text"
+              name="valorTotal"
+              id="valorTotal"
+              :value="selectedItems.reduce((acc, item) => acc + item.valor * item.quantidade, 0)"
+              disabled
+            />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button @click="closeModal" class="cancel">Cancelar</button>
+          <button @click="onSubmit" class="submit">
+            {{ successBtnLabel }}
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- MODAL -->
   </main>
 </template>
 
@@ -268,6 +357,158 @@ const pedidos = [
               }
             }
           }
+        }
+      }
+    }
+  }
+
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+
+    .modal-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      width: 40%;
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: bold;
+        .modal-close {
+          cursor: pointer;
+        }
+      }
+
+      .modal-body {
+        margin-top: 20px;
+
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          margin-bottom: 20px;
+
+          label {
+            margin-bottom: 5px;
+          }
+          input {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #bdc3c7;
+          }
+
+          select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #bdc3c7;
+          }
+
+          .select-item {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            margin-top: 10px;
+            gap: 1rem;
+
+            input {
+              width: 50%;
+              height: 100%;
+            }
+
+            select {
+              width: 50%;
+              height: 100%;
+            }
+
+            button {
+              width: 20%;
+              padding: 10px;
+              border-radius: 5px;
+              border: none;
+              cursor: pointer;
+              color: white;
+              background-color: #409eff;
+
+              &:hover {
+                background-color: #66b1ff;
+              }
+            }
+
+            .delBtn {
+              background-color: #f56c6c;
+              width: 14%;
+              &:hover {
+                background-color: #f78989;
+              }
+            }
+          }
+        }
+      }
+
+      .modal-footer {
+        margin-top: 20px;
+        text-align: right;
+        button {
+          padding: 10px 20px;
+          border-radius: 5px;
+          border: none;
+          cursor: pointer;
+          color: white;
+          font-weight: bold;
+
+          &.cancel {
+            background-color: #f56c6c;
+            margin-right: 10px;
+
+            &:hover {
+              background-color: #f78989;
+            }
+          }
+          &.submit {
+            background-color: #409eff;
+
+            &:hover {
+              background-color: #66b1ff;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 1300px) {
+    .modal {
+      .modal-content {
+        width: 70%;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .modal {
+        .modal-content {
+          width: 90%;
         }
       }
     }
