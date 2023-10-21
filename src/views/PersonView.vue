@@ -34,11 +34,18 @@ const closeModal = () => {
 };
 
 const onSubmit = () => {
+  if (modalTitle.value === "Adicionar Pessoa") {
+    currentPerson.value.id = Math.max(...store.state.searchedPeople.map((p) => p.id)) + 1;
+    store.dispatch("addPerson", currentPerson.value);
+  } else if (modalTitle.value === "Editar Pessoa") {
+    store.dispatch("editPerson", currentPerson.value);
+  }
 
+  closeModal();
 }
 
 const handleDelete = (pessoa) => {
-  
+  store.dispatch("deletePerson", pessoa.id);
 };
 
 const formatCPF = (cpf) => {
@@ -83,11 +90,11 @@ const formatData = (data) => {
             <td>{{ pessoa.cpf }}</td>
             <td>{{ pessoa.dataNascimento }}</td>
             <td class="actions">
-              <button class="edit">
-                <i class="fas fa-edit" @click="openModal('edit', pessoa)"></i>
+              <button class="edit" @click="openModal('edit', pessoa)">
+                <i class="fas fa-edit"></i>
               </button>
-              <button class="del">
-                <i class="fas fa-trash" @click="handleDelete(pessoa)"></i>
+              <button class="del" @click="handleDelete(pessoa)">
+                <i class="fas fa-trash"></i>
               </button>
             </td>
           </tr>

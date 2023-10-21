@@ -35,3 +35,25 @@ export function searchOrders({ commit }, keyword='') {
           }
       })
 }
+
+
+export function deletePerson({ commit }, id) {
+  axios.delete(`http://localhost:3000/pessoas/${id}`)
+      .then(() => {
+          commit('deletePerson', id)
+      })
+}
+
+export function addPerson({ commit }, person) {
+  axios.post('http://localhost:3000/pessoas', person)
+      .then(({ data }) => {
+          commit('addPerson', data)
+      })
+}
+
+export function editPerson({ commit }, person) {
+  axios.put(`http://localhost:3000/pessoas/${person.id}`, person)
+      .then(() => {
+          commit('editPerson', person)
+      })
+}
