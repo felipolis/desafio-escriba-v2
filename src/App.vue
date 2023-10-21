@@ -9,8 +9,6 @@ import SearchBar from './components/SearchBar.vue'
   <main class="main">
     <!-- HEADER -->
     <HeaderNav />
-    <!-- SEARCH BAR -->
-    <SearchBar />
     <!-- PAGE -->
     <RouterView />
   </main>
